@@ -1,0 +1,69 @@
+networks:
+  wazuh_network:
+    driver: bridge
+  attack_scenario_network:
+    driver: bridge
+
+services:
+  wazuh.manager:
+    image: wazuh/wazuh-manager:4.3.10
+    hostname: wazuh.manager
+    restart: always
+    ports:
+      - "1514:1514/udp"    # Port dla agentów Wazuh
+      - "55000:55000"      # Wazuh API
+    networks:
+      - wazuh_network
+    volumes:
+      - wazuh_data:/var/ossec/data
+    environment:
+      - "TZ=Europe/Warsaw"
+
+
+  wazuh-dashboard:
+    image: wazuh/wazuh-dashboard:4.3.10
+    hostname: wazuh-dashboard
+    restart: always
+    ports:
+      - "5601:5601"        # Wazuh Dashboard UI
+    networks:
+      - wazuh_network
+    depends_on:
+      - wazuh.manager
+    environment:
+      - "TZ=Europe/Warsaw"
+
+  victim.agent:
+    build:
+      context: ./victim
+      dockerfile: Dockerfile
+    hostname: victim.agent
+    restart: always
+    ports:
+      - "22:22"            # SSH
+      - "80:80"            # HTTP
+    networks:
+      - attack_scenario_network
+    depends_on:
+      - wazuh.manager
+    environment:
+      - "WAZUH_MANAGER=wazuh.manager"
+      - "TZ=Europe/Warsaw"
+
+  attacker.init:
+    build:
+      context: ./attacker
+      dockerfile: Dockerfile
+    hostname: attacker.init
+    restart: on-failure
+    networks:
+      - attack_scenario_network
+    depends_on:
+      - victim.agent
+    environment:
+      - "VICTIM_HOST=victim.agent"
+      - "TZ=Europe/Warsaw"
+
+volumes:
+  wazuh_data:
+    driver: local
