@@ -16,6 +16,7 @@ services:
       - wazuh_network
     volumes:
       - wazuh_data:/var/ossec/data
+      - ./certs/root-ca.pem:/etc/dashboard/certs/root-ca.pem
     environment:
       - "TZ=Europe/Warsaw"
 
@@ -32,6 +33,8 @@ services:
       - wazuh.manager
     environment:
       - "TZ=Europe/Warsaw"
+      - "INDEXER_URL=https://wazuh.manager:9200"
+      - "SSL_CERTIFICATE_AUTHORITIES=/etc/dashboard/certs/root-ca.pem"
 
   victim.agent:
     build:

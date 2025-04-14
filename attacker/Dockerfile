@@ -6,17 +6,22 @@ ENV TZ=Europe/Warsaw
 
 # Instalacja pakietów i konfiguracja strefy czasowej
 RUN apt-get update && \
-    apt-get install -y openssh-server apache2 tzdata && \
-    apt-get clean && \
+    apt-get install -y \
+      openssh-client \
+      hydra \
+      tzdata \
+      curl \
+      wordlists && \
     ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
-    dpkg-reconfigure --frontend noninteractive tzdata
+    dpkg-reconfigure --frontend noninteractive tzdata && \
+    apt-get clean \
 
 CMD ["tail", "-f", "/dev/null"]
 
 
 # Skrypt inicjujący atak
-#COPY attack_script.sh /usr/local/bin/attack_script.sh
-#RUN chmod +x /usr/local/bin/attack_script.sh
+COPY attack.sh /usr/local/bin/attack.sh
+RUN chmod +x /usr/local/bin/attack.sh
 
 # Uruchomienie skryptu ataku
-#CMD /usr/local/bin/attack_script.sh
+CMD /usr/local/bin/attack.sh
