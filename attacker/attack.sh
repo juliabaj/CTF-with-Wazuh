@@ -1,4 +1,4 @@
-
+#!/bin/bash
 echo "[*] Rozpoczęcie ataku brute-force na usługę SSH hosta victim.agent..."
 
 WORDLIST="/usr/share/wordlists/rockyou.txt"

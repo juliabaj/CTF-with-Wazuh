@@ -5,6 +5,19 @@ networks:
     driver: bridge
 
 services:
+  wazuh.indexer:
+    image: wazuh/wazuh-indexer:4.3.10
+    hostname: wazuh.indexer
+    restart: always
+    networks:
+      - wazuh_network
+    ports:
+      - "9200:9200"
+    environment:
+      - "discovery.type=single-node"
+    volumes:
+      - indexer_data:/var/lib/wazuh-indexer
+
   wazuh.manager:
     image: wazuh/wazuh-manager:4.3.10
     hostname: wazuh.manager
@@ -14,6 +27,8 @@ services:
       - "55000:55000"      # Wazuh API
     networks:
       - wazuh_network
+    depends_on:
+      - wazuh.indexer
     volumes:
       - wazuh_data:/var/ossec/data
       - ./certs/root-ca.pem:/etc/dashboard/certs/root-ca.pem
@@ -31,10 +46,11 @@ services:
       - wazuh_network
     depends_on:
       - wazuh.manager
+      - wazuh.indexer
     environment:
       - "TZ=Europe/Warsaw"
       - "INDEXER_URL=https://wazuh.manager:9200"
-      - "SSL_CERTIFICATE_AUTHORITIES=/etc/dashboard/certs/root-ca.pem"
+    #  - "SSL_CERTIFICATE_AUTHORITIES=/etc/dashboard/certs/root-ca.pem"
 
   victim.agent:
     build:
@@ -47,6 +63,7 @@ services:
       - "80:80"            # HTTP
     networks:
       - attack_scenario_network
+      - wazuh_network
     depends_on:
       - wazuh.manager
     environment:
@@ -70,3 +87,6 @@ services:
 volumes:
   wazuh_data:
     driver: local
+  indexer_data:
+    driver: local
+

@@ -5,28 +5,31 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Warsaw
 
 # Instalacja pakietów i konfiguracja strefy czasowej
+FROM ubuntu:20.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/Warsaw
+
 RUN apt-get update && \
     apt-get install -y \
-            openssh-server \
-            apache2 \
-            tzdata \
-            curl \
-            gnupg && \
-    apt-get clean && \
+        curl \
+        gnupg \
+        tzdata \
+        openssh-server \
+        apache2 && \
     ln -fs /usr/share/zoneinfo/$TZ /etc/localtime && \
-    dpkg-reconfigure --frontend noninteractive tzdata
-
-CMD ["tail", "-f", "/dev/null"]
-
-# Instalacja agenta Wazuh
-RUN curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | apt-key add - && \
+    dpkg-reconfigure --frontend noninteractive tzdata && \
+    curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | apt-key add - && \
     echo "deb https://packages.wazuh.com/4.x/apt/ stable main" > /etc/apt/sources.list.d/wazuh.list && \
-    apt-get update && apt-get install -y wazuh-agent \
+    apt-get update && \
+    apt-get install -y wazuh-agent && \
+    apt-get clean
+
 
 # Konfiguracja SSH
 RUN mkdir /var/run/sshd && \
-RUN echo 'root:password' | chpasswd
-    useradd -m victim && echo 'victim:victim' | chpasswd \
+    echo 'root:password' | chpasswd && \
+    useradd -m victim && echo 'victim:victim' | chpasswd
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
