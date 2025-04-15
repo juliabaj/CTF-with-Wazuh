@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "[*] Rozpoczęcie ataku brute-force na usługę SSH hosta victim.agent..."
 
-WORDLIST="/usr/share/wordlists/rockyou.txt"
+WORDLIST="/usr/share/wordlists/passwords.txt"
 
 if [[ ! -f "$WORDLIST" ]]; then
     echo "[!] Lista haseł nie została znaleziona: $WORDLIST"

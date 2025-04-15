@@ -16,16 +16,12 @@ RUN apt-get update && \
     dpkg-reconfigure --frontend noninteractive tzdata && \
     apt-get clean
 
-# Pobranie rockyou.txt z repo do brute force (zip)
-RUN curl -L https://github.com/danielmiessler/SecLists/archive/refs/heads/master.zip -o /tmp/seclists.zip && \
-    unzip /tmp/seclists.zip -d /opt && \
-    cp /opt/SecLists-master/Passwords/Leaked-Databases/rockyou.txt.tar.gz /tmp && \
-    tar -xvzf /tmp/rockyou.txt.tar.gz -C /usr/share && \
-    rm -rf /tmp/*
-
 # Skrypt inicjujący atak
 COPY attack.sh /attack.sh
 RUN chmod +x /attack.sh
+
+# Skopiowanie wordlista
+COPY passwords.txt /usr/share/wordlists/passwords.txt
 
 # Uruchomienie skryptu ataku
 CMD ["/attack.sh"]
